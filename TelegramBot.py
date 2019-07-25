@@ -223,7 +223,7 @@ if __name__ == '__main__':
 
     tokens_d = read_keys_d(file_name='./api_keys.json')
 
-    if True:
+    if False:
         proxy_url = 'http://proxy.cab.cnea.gov.ar:3128/'
     else:
         proxy_url = None
