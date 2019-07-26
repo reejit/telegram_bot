@@ -17,7 +17,7 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 class TelegramBot(Updater):
     def __init__(self, token='YourTelegramBotToken', proxy_url=None, t2s_obj=None, make_log=False, log_folder='./logs', dbs_path='./dbs',verbose=True):
         """ Instancia un servidor para manejar bots a partir usando telegram.
-            Cada chat id, tiene su propio bot del timpo Bot.
+            Cada chat id, tiene su propio bot del timpo BotHandler.
             La componente t2s_obj debe realizar la conversión de voz a texto. """
             
         # Diccionarios de para los bots, a cada bot se le asigna un ID definido por el chat_idsdds
@@ -238,7 +238,7 @@ if __name__ == '__main__':
 
     tokens_d = read_keys_d(file_name='./api_keys.json')
 
-    if False:
+    if True:
         proxy_url = 'http://proxy.cab.cnea.gov.ar:3128/'
     else:
         proxy_url = None

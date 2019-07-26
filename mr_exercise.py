@@ -1,15 +1,16 @@
 import re
 from db_handler import DB_Handler
+from sentence_parser import Sentence_parser
 
-                         
+
 # States for the bot
 class States:
-    ON_START      = 0
-    PERSONAL_INFO = 1
-    ACTION_SELECT = 2
-    ON_HELP       = 3
-    ON_REC        = 4
-    ON_STATS      = 5
+    ON_START         = 0
+    ON_PERSONAL_INFO = 1
+    ON_ACTION_SELECT = 2
+    ON_HELP          = 3
+    ON_REC           = 4
+    ON_STATS         = 5
 
     
     def __init__(self):
@@ -45,34 +46,41 @@ class States:
     
 corpus_d = {'on_start':[
 ["""Welcome to MrExerciseBot.
-MrExerciseBot is here to help you record your daily exercise rutine.
-MrExerciseBot can understand natural lenguaje, even voice messeges."""],
-["I must advise you, to start recording your training excercises you must provide some information about you first."]],
+MrExerciseBot is here to help you record your daily exercise routine.
+MrExerciseBot can understand natural language, even voice messages"""],
+["Hello user!!!! I must advise you, to start recording your training exercises you must provide some information about you first."]],
 
 'personal_info':[
     ["Please tell me your name:"],
-    ["Very good {name}, Now tell me about the default sport you want to take acount for."],
-    ["That is it. Now we can start to take acount all your activities."] ],
+    ["Very good {name}, Now tell me about the default sport you want to take account for."],
+    ["That is it. Now we can start to take acount all your activities."]],
+'personal_info_err':[
+    ["I was unable to understand your name. Please try again."],
+    ["I was unable to understand your exercise. Please try again."]],
             
 'actions':[
-    ["Please tell me, what do you want to do?"],
-    ["{name}, I can't understend the action you want to do, please try it again."]],
+    ["Please tell me, what do you want to do? You can ask me for help if you need ..."],
+    ["{name}, I can't understand the action you want to do, please try it again."]],
             
 'help':[
     ["""There are a lot of thing that I can do for you:
-- I can show you your las statistics,
+- I can show you your last statistics,
 - I can edit your personal information
 - I can add a new record of your training of today"""] ],
 
 'record':[
-    ['Okey {name}, lets record your training of today.', 'Please what sport did you do today?'],
+    ['Okey {name}, lets record your training of today.', 'did you practice {default_sport}?'],
+    ['Please tell me what sport did you do today?'],
     ['How long did you do the exercise?'],
-    ['How hard was the exercise? (medium, normal, hard)'],
-    ['That was it. You data was saved.']],
-            
+    ['How hard was the exercise? Please give me an indicator from 0 to 10'],
+    ['Happy training {name}!!! Your data was saved.']],
+'record_err':[
+    ["I was unable to understand your yes/no answer. Please try again."],
+    ["I was unable to understand your exercise. Please try again."]],
+
 'stats':[["Okay, {name} let's see what you did ..."],
          ['- sport: {activity}, last {n_records} records.\n- your total time: {total_time}\n- record mean time: {mean_time}\n- your mean model was {mean_act_mode}'],
-         ['Sorry {name}, you have record yet, Please make a record of your training before ask me the stats.']] }
+         ['Sorry {name}, you have records yet, Please make a record of your training before ask me the stats.']] }
 
 
 
@@ -95,6 +103,9 @@ class MrExerciseBot():
                               db_name=self.user_id,
                               verbose=self.verbose)
 
+        # Instantiate Sentence_parser object for natural lenguaje processing
+        self.sp = Sentence_parser()
+        
         # Object States, for acount Bot States
         self.state = States()
 
@@ -166,21 +177,29 @@ class MrExerciseBot():
             self.state.step()
             
         elif i_step == 1:
-            q = q.strip()
-            q = q[0].upper() + q[1:]
-            self.personal_info_d['name'] = q
-            to_resp_v += corpus_d['personal_info'][1]
-            self.state.step()
+            name = self.sp.find_name(q)
+            if name:
+                self.personal_info_d['name'] = name
+                to_resp_v += corpus_d['personal_info'][1]
+                self.state.step()
+            else:
+                to_resp_v += corpus_d['personal_info_err'][0]
+                
             
         elif i_step == 2:
-            self.personal_info_d['default_sport'] = q
-            to_resp_v += corpus_d['personal_info'][2]
-            self.personal_info_d['complete'] = True
-            self.state.set_state( States.ACTION_SELECT )
+            default_sport = self.sp.find_exercise(q)
 
-            # Personal info will be saved
-            self.save_personal_info()
-            to_resp_v += self.query()
+            if default_sport:
+                self.personal_info_d['default_sport'] = default_sport
+                to_resp_v += corpus_d['personal_info'][2]
+                self.personal_info_d['complete'] = True
+                self.state.set_state( States.ON_ACTION_SELECT )
+
+                # Personal info will be saved
+                self.save_personal_info()
+                to_resp_v += self.query()
+            else:
+                to_resp_v += corpus_d['personal_info_err'][1]
         
         return to_resp_v
 
@@ -199,22 +218,42 @@ class MrExerciseBot():
             self.state.step()
             
         elif i_step == 1:
-            self.to_record_d['activity'] = q
-            to_resp_v += corpus_d['record'][1]
-            self.state.step()
+            use_default = self.sp.yes_no_question(q)
+            if use_default == True:
+                to_resp_v += corpus_d['record'][2]
+                self.state.step()
+                self.state.step()
+                
+            elif use_default == False:
+                to_resp_v += corpus_d['record'][1]
+                self.state.step()
 
+            else:
+                to_resp_v += corpus_d['record_err'][0]
+                
+            
         elif i_step == 2:
+            sport = self.sp.find_exercise()
+
+            if sport:
+                self.to_record_d['activity'] = sport
+                to_resp_v += corpus_d['record'][2]
+                self.state.step()
+            else:
+                to_resp_v += corpus_d['record_err'][1]
+
+        elif i_step == 3:
             self.to_record_d['time'] = int(q)
-            to_resp_v += corpus_d['record'][2]
+            to_resp_v += corpus_d['record'][3]
             self.state.step()
             
-        elif i_step == 3:
+        elif i_step == 4:
             self.to_record_d['act_mode'] = int(q)
-            to_resp_v += corpus_d['record'][3]
+            to_resp_v += corpus_d['record'][4]
 
             self.dbh.add_record( **self.to_record_d)
             
-            self.state.set_state( States.ACTION_SELECT )
+            self.state.set_state( States.ON_ACTION_SELECT )
 
             # Personal info will be saved
             self.save_personal_info()
@@ -234,21 +273,22 @@ class MrExerciseBot():
         if i_step == 0:
             to_resp_v += corpus_d['actions'][0]
             self.state.step()
-
+        
         elif i_step == 1:
-            if ('personal' in q) or ('edit' in q) :
-                self.state.set_state(States.PERSONAL_INFO)
+            q_lower = q.lower()
+            if ('personal' in q_lower) or ('edit' in q_lower) :
+                self.state.set_state(States.ON_PERSONAL_INFO)
                 to_resp_v += self.query(q)
                 
-            elif ('help' in q) or ('what' in q):
+            elif ('help' in q_lower) or ('what' in q_lower):
                 self.state.set_state(States.ON_HELP)
                 to_resp_v += self.query(q)
 
-            elif ('rec' in q) or ('add' in q):
+            elif ('rec' in q_lower) or ('add' in q_lower):
                 self.state.set_state(States.ON_REC)
                 to_resp_v += self.query(q)
 
-            elif ('give' in q) or ('stat' in q):
+            elif ('give' in q_lower) or ('stat' in q_lower):
                 self.state.set_state(States.ON_STATS)
                 to_resp_v += self.query(q)
                 
@@ -262,7 +302,7 @@ class MrExerciseBot():
         to_resp_v = []
 
         to_resp_v += corpus_d['help'][0]
-        self.state.set_state(States.ACTION_SELECT)
+        self.state.set_state(States.ON_ACTION_SELECT)
 
         to_resp_v += self.query(q)
         
@@ -283,7 +323,7 @@ class MrExerciseBot():
                 to_resp_v.append( corpus_d['stats'][1][0].format(**stats_d) )
 
 
-        self.state.set_state(States.ACTION_SELECT)
+        self.state.set_state(States.ON_ACTION_SELECT)
 
         to_resp_v += self.query(q)
         
@@ -291,8 +331,6 @@ class MrExerciseBot():
 
         
     def query(self, q=''):
-        q = q.lower()
-        
         to_resp_v = []
 
         state, i_step = self.state.get_state()
@@ -302,21 +340,21 @@ class MrExerciseBot():
                 print(' - MrExerciseBot, query: Selecting ON_START.')
                 
             if self.personal_info_d['complete']:
-                self.state.set_state(States.ACTION_SELECT)
+                self.state.set_state(States.ON_ACTION_SELECT)
             else:
-                self.state.set_state(States.PERSONAL_INFO)
+                self.state.set_state(States.ON_PERSONAL_INFO)
 
             to_resp_v += self.query(q)
                 
-        elif state == States.PERSONAL_INFO:
+        elif state == States.ON_PERSONAL_INFO:
             if self.verbose:
-                print(' - MrExerciseBot, query: Selecting PERSONAL_INFO.')
+                print(' - MrExerciseBot, query: Selecting ON_PERSONAL_INFO.')
 
             to_resp_v += self.exec_personal_info(q)
 
-        elif state == States.ACTION_SELECT:
+        elif state == States.ON_ACTION_SELECT:
             if self.verbose:
-                print(' - MrExerciseBot, query: Selecting ACTION_SELECT.')
+                print(' - MrExerciseBot, query: Selecting ON_ACTION_SELECT.')
                 
             to_resp_v += self.exec_action_select(q)
 
@@ -358,17 +396,17 @@ if __name__ == '__main__':
     
     def resp(r_v):
         for r in r_v:
-            print(r)
+            print(' BOT_msg >>>', r)
+            print()
 
     
     resp(bot.on_start())
 
     while 1:
-        q = input('>>>')
+        q = input(' USR_msg >>> ')
         r_v = bot.query(q)
         resp(r_v)
 
-        print()
 
 
 

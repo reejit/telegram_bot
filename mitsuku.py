@@ -2,16 +2,18 @@ import requests
 import random
 
 class PandoraBot():
-    """ Clase para interactuar con bots de la pagina https://pandorabots.com"""
+    """ Clase para interactuar con bots de la pagina https://pandorabots.com
+        Está pensada para ser integrada con TelegramBot para realizar pruebas preliminares."""
     
     def __init__(self, user_id='12354', dbs_path='./dbs', verbose=False):
 
-        botid='e397abf70e345a0e' # Para usar a mitsuku
-        self.botcust2 = self.gen_rnd() #'b1a3b932de49faeb'
+        botid='e397abf70e345a0e'       # Para usar a mitsuku, modificando el número se modifica el bot (aún no probado)
+        self.botcust2 = self.gen_rnd(seed=int(user_id)) # ej 'b1a3b932de49faeb'  Identificador de usuario
         self.bot_id   = botid
 
         self.verbose = verbose
         
+        # url para los bots
         self.url = 'https://kakko.pandorabots.com/pandora/talk?botid={}&skin=mobile'.format(self.bot_id)
         return None
 
