@@ -178,15 +178,17 @@ class DB_Handler:
 
 
         gs = df_f.groupby('activity')
-        ret_d = {}
+        ret_v = []
         for k in gs.groups.keys():
             df_g = gs.get_group(k)
             print(df_g)
-            ret_d[k] = {'mean_{}'.format( self.rec_df_columns[2]): df_g[self.rec_df_columns[2]].mean(),
-                        'total_{}'.format(self.rec_df_columns[2]): df_g[self.rec_df_columns[2]].sum(),
-                        'mean_{}'.format( self.rec_df_columns[3]): df_g[self.rec_df_columns[3]].sum()}
+            ret_v.append({'activity':str(k),
+                          'mean_{}'.format( self.rec_df_columns[2]): df_g[self.rec_df_columns[2]].mean(),
+                          'total_{}'.format(self.rec_df_columns[2]): df_g[self.rec_df_columns[2]].sum(),
+                          'mean_{}'.format( self.rec_df_columns[3]): df_g[self.rec_df_columns[3]].sum(),
+                          'n_records'                              : df_g[self.rec_df_columns[2]].count()} )
             
-        return ret_d
+        return ret_v
         
 if __name__ == '__main__':
     # Some tests
@@ -204,10 +206,10 @@ if __name__ == '__main__':
 ##        dbh.delete_db()
 ##        print(dbh.get_private_data())
 
-        dbh.delete_db()
+##        dbh.delete_db()
         p = dbh.add_record()
-##        dbh.add_record('10-10-19')
-##        dbh.add_record('11-10-19')
+        dbh.add_record('10-10-19')
+        dbh.add_record('11-10-19')
         print(dbh.get_rec_df() )
 
         print(dbh.get_stats())

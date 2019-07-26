@@ -8,14 +8,14 @@ from telegram.ext import Updater
 from telegram.ext import CommandHandler
 from telegram.ext import MessageHandler, Filters
 
-from mitsuku import PandoraBot as BotHandler
-
+##from mitsuku import PandoraBot as BotHandler
+from mr_exercise import MrExerciseBot as BotHandler
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
 
 class TelegramBot(Updater):
-    def __init__(self, token='YourTelegramBotToken', proxy_url=None, t2s_obj=None, make_log=False, log_folder='./logs', verbose=True):
+    def __init__(self, token='YourTelegramBotToken', proxy_url=None, t2s_obj=None, make_log=False, log_folder='./logs', dbs_path='./dbs',verbose=True):
         """ Instancia un servidor para manejar bots a partir usando telegram.
             Cada chat id, tiene su propio bot del timpo Bot.
             La componente t2s_obj debe realizar la conversión de voz a texto. """
@@ -34,6 +34,9 @@ class TelegramBot(Updater):
 
         # Directorio para realizar el log
         self.log_folder = log_folder
+
+        # Directorio para la base de datos
+        self.dbs_path = dbs_path
         
         # Inicializo el módulo Updater con el token y el proxy si es necesario.
         if proxy_url is not None:
@@ -58,7 +61,7 @@ class TelegramBot(Updater):
 
     def get_bot_by_chat_id(self, chat_id, force_start=False):
         if force_start or (chat_id not in self.bots_box.keys()):
-            bot = BotHandler()
+            bot = BotHandler(user_id=chat_id, dbs_path=self.dbs_path)
             self.bots_box[chat_id]  = bot
         else:
             bot = self.bots_box[chat_id]
@@ -70,13 +73,18 @@ class TelegramBot(Updater):
         return list( self.bots_box.keys() )
     
 
-    def on_start(self, bot, update):
+    def on_start(self, tg_bot, update):
         chat_id = update.message.chat_id
+        
+        bot_brain = self.get_bot_by_chat_id(chat_id, force_start=False)
 
-        print(' Empezando chat con:', chat_id)
+        
+        print(' TelegramBot Starting chat with:', chat_id)
 
-        get_bot(chat_id, force_start=True)
-        bot.send_message(chat_id=update.message.chat_id, text="Empezando nuevo chat con Mitsuku, say something in ENGLISH!!!! :")
+        resp_v = bot_brain.on_start()
+        
+        self.send_resp_v(chat_id, tg_bot, resp_v)
+        
         return None
     
 
@@ -139,9 +147,9 @@ class TelegramBot(Updater):
         return save_path
 
 
-    def save_log(self, chat_id, msg, resp):
+    def save_log(self, chat_id, msg, resp_v):
 
-        to_save = json.dumps([int(time.time()), chat_id, msg, resp])
+        to_save = json.dumps([int(time.time()), chat_id, msg, resp_v])
 
         
         working_folder = self.get_save_dir(chat_id)
@@ -152,29 +160,36 @@ class TelegramBot(Updater):
         return None
 
 
-
     def on_txt_msg(self, tg_bot, update):
         msg = update.message.text
         chat_id = update.message.chat_id
 
         bot_brain = self.get_bot_by_chat_id(chat_id, force_start=False)
 
-        resp = bot_brain.ask(msg)
+        resp_v = bot_brain.query(msg)
 
         if self.verbose:
             print('msg[{}]: {} '.format(chat_id, msg))
-            print('mk_rep:     {}'.format(resp))
+            print('mk_rep:     {}'.format(resp_v))
             print()
 
         # Mando respuesta a través del telegram_bot
-        tg_bot.send_message(chat_id=chat_id, text=resp)
+        self.send_resp_v(chat_id, tg_bot, resp_v)
         
         # Makeing or deleting log
         if self.make_log:
-            self.save_log(chat_id, msg, resp)
+            self.save_log(chat_id, msg, resp_v)
             
         return None
-    
+
+
+    def send_resp_v(self, chat_id, tg_bot, resp_v):
+        for text in resp_v:
+            tg_bot.send_message(chat_id=chat_id, text=text)
+            
+        return None
+                
+        
 
     def on_voice_msg(self, tg_bot, update):
         voice_msg = update.message.voice
@@ -187,21 +202,21 @@ class TelegramBot(Updater):
         msg = self.voice2text(ogg_filename)
 
         
-        resp = bot_brain.ask(msg)
+        resp_v = bot_brain.query(msg)
+        resp_v[0] = 'wit_echo: {}\n\n{}'.format(msg, resp_v[0])
         
-        text = 'wit_echo: {}\n\n{}'.format(msg, resp)
 
         if self.verbose:
             print('msg[{}]: {} '.format(chat_id, msg))
-            print('mk_rep:     {}'.format(resp))
+            print('mk_rep:     {}'.format(resp_v))
             print()
             
         # Mando respuesta a través del telegram_bot
-        tg_bot.send_message(chat_id=chat_id, text=text)
+        self.send_resp_v(chat_id, tg_bot, resp_v)
 
         # Makeing or deleting log
         if self.make_log:
-            self.save_log(chat_id, msg, resp)
+            self.save_log(chat_id, msg, resp_v)
         else:
             os.remove(ogg_filename)
         
