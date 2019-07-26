@@ -7,8 +7,8 @@ re_digits_v      = [r'\d+']
 re_hour_corpus_v = [r'\bhs?\b', r'\bhours?\b']
 re_mins_corpus_v = [r'\bm\b', r'\bminutes?\b', r'\bmins?\b']
 
-re_yes_corpus_v = [r'\by\b', r'\byes\b', r'\bok\b', r'\bokey\b']
-re_not_corpus_v = [r'\bn\b', r'\bnot?\b']
+re_yes_corpus_v = [r'\by\b', r'\byes\b', r'\bok\b', r'\bokey\b', r"\bdid\b"]
+re_not_corpus_v = [r'\bn\b', r'\bnot?\b', r"\bdidt\b", r"\bdidn?'t\b"]
 
 
 
@@ -26,12 +26,13 @@ class Sentence_parser:
         f_yes = re.findall('|'.join(re_yes_corpus_v), sentence)            
         f_not = re.findall('|'.join(re_not_corpus_v), sentence)
 
+        to_ret = None
         if len(f_yes) > 0:
-            return True
-        elif len(f_not) > 0:
-            return False
-        else:
-            return None
+            to_ret = True
+        if len(f_not) > 0:
+            to_ret =  False
+
+        return to_ret
 
     def postag(self, sentence):
         """ Make a postag of a sentense """

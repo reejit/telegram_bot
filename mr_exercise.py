@@ -233,7 +233,7 @@ class MrExerciseBot():
                 
             
         elif i_step == 2:
-            sport = self.sp.find_exercise()
+            sport = self.sp.find_exercise(q)
 
             if sport:
                 self.to_record_d['activity'] = sport
