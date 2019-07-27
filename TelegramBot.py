@@ -238,7 +238,7 @@ if __name__ == '__main__':
 
     tokens_d = read_keys_d(file_name='./api_keys.json')
 
-    if True:
+    if False:
         proxy_url = 'http://proxy.cab.cnea.gov.ar:3128/'
     else:
         proxy_url = None
@@ -246,7 +246,7 @@ if __name__ == '__main__':
     
     wit2 = WIT_sph2txt(wit_token=tokens_d['WIT_CLIENT_TOKEN'], verbose=False)
 
-    tb = TelegramBot(token=tokens_d['BigSergioBot'], proxy_url=proxy_url, t2s_obj=wit2, make_log=True)
+    tb = TelegramBot(token=tokens_d['MrExerciseBot'], proxy_url=proxy_url, t2s_obj=wit2, make_log=True)
     tb.connect()
 
     

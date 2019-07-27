@@ -53,17 +53,19 @@ class Sentence_parser:
 
         ss_sport    = wn.synsets('sport')[0]
         ss_exercise = wn.synsets('exercise')[0]
+        ss_practice = wn.synsets('practice')[0]
         
         pt_v = self.postag(sentence)
         if len(pt_v) > 1:
             for w, t in pt_v:
-                if 'sport' in w or 'exe' in w:
+                if 'sport' in w or 'exe' in w or 'practi' in w:
                     continue
                     
                 if ('NN' in t) or ('VB' in t):
                     ss_NN = wn.synsets(w)
                     d_sport    = [wn.path_similarity(ss, ss_sport,    simulate_root=False) for ss in ss_NN]
                     d_exercise = [wn.path_similarity(ss, ss_exercise, simulate_root=False) for ss in ss_NN]
+                    d_practice = [wn.path_similarity(ss, ss_practice, simulate_root=False) for ss in ss_NN]
 ##                    print(d_sport)
 ##                    print(d_exercise)
                     d_v = [d for d in (d_sport + d_exercise) if d is not None]
@@ -101,6 +103,10 @@ class Sentence_parser:
             
         if 'me' in tokens_lower:
             present = 'me'
+
+        if 'am' in tokens_lower:
+            present = 'am'
+            
             
         pt_v = self.postag(sentence)
         jump = True
