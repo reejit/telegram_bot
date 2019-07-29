@@ -17,8 +17,20 @@ class Sentence_parser:
     """ This class has the task of parsing sentences and retrieve relevant information """
 
     def __init__(self):
-        
         return None
+
+
+    def find_v(self, sentence, to_find_v):
+        sentence = sentence.lower()
+        found = False
+
+        for w in to_find_v:
+            if w in sentence:
+                found = True
+                break
+
+        return found
+        
     def yes_no_question(self, sentence):
         sentence = sentence.lower()
 
