@@ -129,7 +129,9 @@ class DB_Handler:
     def add_record(self, date=None, activity='Unknown', time=0, act_mode=1):
         """ appends a record to rec_db.
             """
-
+        time     = int(time)
+        act_mode = int(act_mode)
+        
         rec_df = self.get_rec_df()
 
         if date is None:

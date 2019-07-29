@@ -34,8 +34,8 @@ class States:
         self.i_step += 1
         return None
 
-    def step_back(self):
-        self.i_step -= 1
+    def step_back(self, n_steps=1):
+        self.i_step -= abs(n_steps)
         if self.i_step < 0:
             self.i_step = 0
             
@@ -196,6 +196,7 @@ class MrExerciseBot():
             self.state.step()
             
         elif i_step == 1:
+            
             use_default = self.sp.yes_no_question(q)
             
             if use_default == True:
@@ -222,22 +223,45 @@ class MrExerciseBot():
                 to_resp_v += corpus_d['record_err'][i_step]
 
         elif i_step == 3:
-            self.to_record_d['time'] = int(q)
-            to_resp_v += corpus_d['record'][i_step]
-            self.state.step()
+            self.to_record_d['time'] = self.sp.find_mins(q)
+
+            if self.to_record_d['time'] > 0:
+                to_resp_v += corpus_d['record'][i_step]
+                self.state.step()
+            else:
+                to_resp_v += corpus_d['record_err'][4]
             
         elif i_step == 4:
-            self.to_record_d['act_mode'] = int(q)
-            to_resp_v += corpus_d['record'][i_step]
+            self.to_record_d['act_mode'] = self.sp.find_difficulty(q)
+            if  1 <= self.to_record_d['act_mode'] <= 10:
+                to_resp_v += [dialog.format(**self.to_record_d) for dialog in corpus_d['record'][i_step]]
+                self.state.step()
+            else:
+                to_resp_v += corpus_d['record_err'][5]
 
-            self.dbh.add_record( **self.to_record_d)
-            
-            self.state.set_state( States.ON_ACTION_SELECT )
+        elif i_step == 5:
+            do_save = self.sp.yes_no_question(q)
 
-            # Personal info will be saved
-            self.save_personal_info()
-            to_resp_v += self.query()
-        
+            if do_save == True:
+                self.dbh.add_record( **self.to_record_d)
+                self.state.set_state( States.ON_ACTION_SELECT )
+
+                # Personal info will be saved
+                self.save_personal_info()
+                
+                to_resp_v += corpus_d['record'][i_step]
+                to_resp_v += self.query()
+                
+            elif do_save == False:
+                self.state.set_state( States.ON_REC )
+
+                to_resp_v += corpus_d['record_err'][3]
+                to_resp_v += self.query()
+
+            else:
+                to_resp_v += corpus_d['record_err'][1]
+
+                
         return to_resp_v
 
     

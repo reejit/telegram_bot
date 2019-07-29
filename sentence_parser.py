@@ -6,11 +6,43 @@ import re
 re_digits_v      = [r'\d+']
 re_hour_corpus_v = [r'\bhs?\b', r'\bhours?\b']
 re_mins_corpus_v = [r'\bm\b', r'\bminutes?\b', r'\bmins?\b']
+re_add_corpus_v  = [r'\band\b', r'\bplus\b']
 
 re_yes_corpus_v = [r'\by\b', r'\byes\b', r'\bok\b', r'\bokey\b', r"\bdid\b"]
 re_not_corpus_v = [r'\bn\b', r'\bnot?\b', r"\bdidt\b", r"\bdidn?'t\b"]
 
 
+numbers_1_9_d = {'one'         : 1,
+                 'two'         : 2,
+                 'three'       : 3,
+                 'four'        : 4,
+                 'five'        : 5,
+                 'six'         : 6,
+                 'seven'       : 7,
+                 'eight'       : 8,
+                 'nine'        : 9}
+
+numbers_10_19_d = {'ten'         :10,
+                   'eleven'      :11,
+                   'twelve'      :12,
+                   'thirteen'    :13,
+                   'fourteen'    :14,
+                   'fifteen'     :15,
+                   'sixteen'     :16,
+                   'seventeen'   :17,
+                   'eighteen'    :18,
+                   'nineteen'    :19,
+                   'quarter'     :15,
+                   'half'        :30}
+             
+numbers_20_90_d = {'twenty'      :20,
+                   'thirty'      :30,
+                   'forty'       :40,
+                   'fifty'       :50,
+                   'sixty'       :60,
+                   'seventy'     :70,
+                   'eighty'      :80,
+                   'ninety'      :90}
 
 
 class Sentence_parser:
@@ -160,35 +192,94 @@ class Sentence_parser:
                 name_v[i] = name_v[i][0].upper() + name_v[i][1:].lower()
                 
         return ' '.join(name_v)
-        
 
+
+    def parse_nums(self, sentence):
+        # to lower
+        sentence = sentence.lower()
+
+        # Ensure spaces over digits and units
+        sentence = re.sub(r'(\d)([a-z])', r'\1 \2', sentence)
+
+        # Transform the conectors
+        sentence = re.sub('|'.join(re_hour_corpus_v), r'H', sentence)
+        sentence = re.sub('|'.join(re_mins_corpus_v), r'M', sentence)
+        sentence = re.sub('|'.join(re_add_corpus_v),  r'A', sentence)
+
+        # Reemplace of all the special caracters:
+        for k, v in numbers_10_19_d.items():
+            sentence = re.sub(k, str(v), sentence)
+
+        # Reemplace compound numbers
+        for k_dec, v_dec in numbers_20_90_d.items():
+            for k_un, v_un in numbers_1_9_d.items():
+                sentence = re.sub('{}.?{}'.format(k_dec, k_un), '{}'.format(v_dec+v_un), sentence)
+
+        # Reemplace single numbers
+        for k_un, v_un in numbers_1_9_d.items():
+            sentence = re.sub('{}'.format(k_un), '{}'.format(v_un), sentence)
+
+        # Filter relevant information
+        parsed_v = re.findall(r'[A-Z]|\b\d+\b', sentence)
+
+        # Numbers to int type
+        parsed_v = [int(i) if i.isdigit() else i for i in parsed_v]
+
+        return parsed_v
+
+
+    def find_mins(self, sentence):
+        parsed_v = self.parse_nums(sentence)
         
+        # Calculate total minutes
+        total_mins = 0
+        for i in range(len(parsed_v)):
+            if parsed_v[i] in ['A', 'M', 'H']:
+                continue
+
+            if type(parsed_v[i]) is int:
+                if i+1 < len(parsed_v) and parsed_v[i+1] == 'H':
+                    total_mins += 60 * parsed_v[i]
+                else:
+                    total_mins += parsed_v[i]
+                    
+        return total_mins
+
+
+
+    def find_difficulty(self, sentence):
+        parsed_v = self.parse_nums(sentence)
+
+        difficulty = 5
+
+        for i in parsed_v:
+            if type(i) is int:
+                difficulty = i
+                break
+            
+        return difficulty
     
-sentence = 'about 244 hours and 5h for 8 hs 8 hour 5 mins 9 min'
 
-
-
-
-
+    
 if __name__ == '__main__':
     sp = Sentence_parser()
-
-    
-    ss_sport    = wn.synsets('sport')[0]
-    ss_exercise = wn.synsets('exercise')[0]
-
-    
-    ss_try   = wn.synsets('minute')[0]
-
-    sentence_v = ["please take account of boxing.",
-                  "my sport is football.",
-                  "my exercise is swimming.",
-                  "my sport is running",
-                  "I am practicing basketball right now"]
-
-    for s in sentence_v:
-        sport = sp.find_exercise(s)
-        print(sport)
+##
+##    
+##    ss_sport    = wn.synsets('sport')[0]
+##    ss_exercise = wn.synsets('exercise')[0]
+##
+##    
+##    ss_try   = wn.synsets('minute')[0]
+##
+##    sentence_v = ["please take account of boxing.",
+##                  "my sport is football.",
+##                  "my exercise is swimming.",
+##                  "my sport is running",
+##                  "I am practicing basketball right now"]
+##
+##    for s in sentence_v:
+##        sport = sp.find_exercise(s)
+##        print(sport)
     
 
             
@@ -196,8 +287,26 @@ if __name__ == '__main__':
 ##    tagged = nltk.pos_tag(tokens)
 ##
 ##    print(tagged)
+
+
+    sentence_v = ['I run over twenty two minutes and five al the gym and 9 hs round the park',
+                  'about twelve minutes around my house and 5h in the park and 8 hs 8 hour fifty five mins 9 min',
+                  '55']
+
+    sentence = sentence_v[1]
+    
+
+    for s in sentence_v:
+        print(s)
+        print(sp.find_mins(s))
+        print()
+
+
+    
 ##    sentence = re.sub(r'(\d)([a-z])', r'\1 \2', sentence)
-##    
+
+
+    
 ##    f_v = re.findall('|'.join(re_digits_v + re_hour_corpus_v + re_mins_corpus_v), sentence)
 ##    print(f_v)
 

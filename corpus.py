@@ -35,16 +35,20 @@ MrExerciseBot can understand natural language, even voice messages"""],
     ['Okey {name}, lets record your training of today.', 'did you practice {default_sport}?'],
     ['Please tell me what sport did you do today?'],
     ['How long did you do the exercise?'],
-    ['How hard was the exercise? Please give me an indicator from 0 to 10'],
+    ['How hard was the exercise? Please give me an indicator from 1 to 10'],
+    ['I understood you played {activity} about {time} minutes. The level of the activity was {act_mode}. Is that correct?'],
     ['Happy training {name}!!! Your data was saved.']],
 'record_err':[
     [notImplemented],
     ["I was unable to understand your yes/no answer. Please try again."],
-    ["I was unable to understand your exercise. Please try again."]],
+    ["I was unable to understand your exercise. Please try again."],
+    ["Sorry {name}, can try to tell me again?"],
+    ["Sorry {name}, I can't understand the time spent on your activity, please try it again ..."],
+    ["Sorry {name}, I can't understand your activity level, remember it must beetwn 1 and 10, please try it again ..."], ],
 
 'stats':[
     ["Okay, {name} let's see what you did ..."],
-    ['- sport: {activity}, last {n_records} records.\n- your total time: {total_time}\n- record mean time: {mean_time}\n- your mean model was {mean_act_mode}'],
+    ['- sport: {activity}, last {n_records} records.\n- your total time: {total_time}\n- record mean time: {mean_time}\n- your mean activity mode was: {mean_act_mode}', 'This is a wonderful result, keep improving !!!'],
     ['Sorry {name}, you have records yet, Please make a record of your training before ask me the stats.']],
 
 
@@ -72,10 +76,6 @@ action_select_keys_d = {'personal_info':  ['personal', 'info', 'edit', 'modi'],
                         'stats':          ['give', 'stat'],
                         'delete':         ['delete', 'del'],
                         'cancel':         ['cancel', 'stop', 'quit', 'exit']}
-
-
-
-
 
 
 
