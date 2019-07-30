@@ -71,10 +71,10 @@ MrExerciseBot can understand natural language, even voice messages"""],
 
 
 action_select_keys_d = {'personal_info':  ['personal', 'info', 'edit', 'modi'],
-                        'help':           ['help', 'what'],
+                        'help':           ['help', 'what', '?'],
                         'record':         ['rec', 'add', 'post'],
                         'stats':          ['give', 'stat'],
-                        'delete':         ['delete', 'del'],
+                        'delete':         ['delete', 'erase'],
                         'cancel':         ['cancel', 'stop', 'quit', 'exit']}
 
 

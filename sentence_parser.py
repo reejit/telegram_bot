@@ -8,8 +8,8 @@ re_hour_corpus_v = [r'\bhs?\b', r'\bhours?\b']
 re_mins_corpus_v = [r'\bm\b', r'\bminutes?\b', r'\bmins?\b']
 re_add_corpus_v  = [r'\band\b', r'\bplus\b']
 
-re_yes_corpus_v = [r'\by\b', r'\byes\b', r'\bok\b', r'\bokey\b', r"\bdid\b"]
-re_not_corpus_v = [r'\bn\b', r'\bnot?\b', r"\bdidt\b", r"\bdidn?'t\b"]
+re_yes_corpus_v = [r'\by\b', r'\byes\b', r'\bok\b', r'\bokey\b', r"\bdid\b", r'\bwant\b', r'\bdo\b']
+re_not_corpus_v = [r'\bn\b', r'\bnot?\b', r"\bdidt\b", r"\bdidn'?t\b", r"\bdon'?t\b"]
 
 
 numbers_1_9_d = {'one'         : 1,
@@ -112,7 +112,7 @@ class Sentence_parser:
                     d_practice = [wn.path_similarity(ss, ss_practice, simulate_root=False) for ss in ss_NN]
 ##                    print(d_sport)
 ##                    print(d_exercise)
-                    d_v = [d for d in (d_sport + d_exercise) if d is not None]
+                    d_v = [d for d in (d_sport + d_exercise + d_practice) if d is not None]
                     if len(d_v) > 0:
                         d_NN = max(d_v)
                     else:
@@ -263,8 +263,9 @@ class Sentence_parser:
     
 if __name__ == '__main__':
     sp = Sentence_parser()
-##
-##    
+    sp.find_mins('I run two hours around the square and a warm-up of 16 mins in my house.')
+
+
 ##    ss_sport    = wn.synsets('sport')[0]
 ##    ss_exercise = wn.synsets('exercise')[0]
 ##
@@ -289,17 +290,17 @@ if __name__ == '__main__':
 ##    print(tagged)
 
 
-    sentence_v = ['I run over twenty two minutes and five al the gym and 9 hs round the park',
-                  'about twelve minutes around my house and 5h in the park and 8 hs 8 hour fifty five mins 9 min',
-                  '55']
-
-    sentence = sentence_v[1]
-    
-
-    for s in sentence_v:
-        print(s)
-        print(sp.find_mins(s))
-        print()
+##    sentence_v = ['I run over twenty two minutes and five al the gym and 9 hs round the park',
+##                  'about twelve minutes around my house and 5h in the park and 8 hs 8 hour fifty five mins 9 min',
+##                  '55']
+##
+##    sentence = sentence_v[1]
+##    
+##
+##    for s in sentence_v:
+##        print(s)
+##        print(sp.find_mins(s))
+##        print()
 
 
     
