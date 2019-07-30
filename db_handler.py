@@ -183,7 +183,7 @@ class DB_Handler:
         ret_v = []
         for k in gs.groups.keys():
             df_g = gs.get_group(k)
-            print(df_g)
+            #print(df_g)
             ret_v.append({'activity':str(k),
                           'mean_{}'.format( self.rec_df_columns[2]): df_g[self.rec_df_columns[2]].mean(),
                           'total_{}'.format(self.rec_df_columns[2]): df_g[self.rec_df_columns[2]].sum(),

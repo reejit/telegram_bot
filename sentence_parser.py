@@ -8,8 +8,8 @@ re_hour_corpus_v = [r'\bhs?\b', r'\bhours?\b']
 re_mins_corpus_v = [r'\bm\b', r'\bminutes?\b', r'\bmins?\b']
 re_add_corpus_v  = [r'\band\b', r'\bplus\b']
 
-re_yes_corpus_v = [r'\by\b', r'\byes\b', r'\bok\b', r'\bokey\b', r"\bdid\b", r'\bwant\b', r'\bdo\b']
-re_not_corpus_v = [r'\bn\b', r'\bnot?\b', r"\bdidt\b", r"\bdidn'?t\b", r"\bdon'?t\b"]
+re_yes_corpus_v = [r'\by\b', r'\byes\b', r'\bok\b', r'\bokey\b', r"\bdid\b", r'\bwant\b', r'\bdo\b', r'affirmative', r'positive', r'exact']
+re_not_corpus_v = [r'\bn\b', r'\bnot?\b', r"\bdidt\b", r"\bdidn'?t\b", r"\bdon'?t\b", r'negative']
 
 
 numbers_1_9_d = {'one'         : 1,
@@ -31,9 +31,7 @@ numbers_10_19_d = {'ten'         :10,
                    'sixteen'     :16,
                    'seventeen'   :17,
                    'eighteen'    :18,
-                   'nineteen'    :19,
-                   'quarter'     :15,
-                   'half'        :30}
+                   'nineteen'    :19}
              
 numbers_20_90_d = {'twenty'      :20,
                    'thirty'      :30,
@@ -206,6 +204,9 @@ class Sentence_parser:
         sentence = re.sub('|'.join(re_mins_corpus_v), r'M', sentence)
         sentence = re.sub('|'.join(re_add_corpus_v),  r'A', sentence)
 
+        sentence = re.sub('half', ' 30 M ', sentence)
+        sentence = re.sub('quarter', ' 15 M ', sentence)
+               
         # Reemplace of all the special caracters:
         for k, v in numbers_10_19_d.items():
             sentence = re.sub(k, str(v), sentence)
