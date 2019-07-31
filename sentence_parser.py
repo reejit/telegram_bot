@@ -43,6 +43,15 @@ numbers_20_90_d = {'twenty'      :20,
                    'ninety'      :90}
 
 
+
+action_select_keys_d = {'personal_info':  ['personal', 'edit', 'modify'],
+                        'help':           ['help'],
+                        'record':         ['record', 'add', 'new'],
+                        'stats':          ['stats', 'summary', 'statistics', 'results'],
+                        'delete':         ['delete', 'erase', 'remove', 'reset', 'clear', 'clean'],
+                        'cancel':         ['cancel', 'stop', 'quit', 'exit', 'back']}
+
+
 class Sentence_parser:
     """ This class has the task of parsing sentences and retrieve relevant information """
 
@@ -261,11 +270,113 @@ class Sentence_parser:
         return difficulty
     
 
+
+    def intension_detector(self, sentence, just_cancel=False):
+        """ returns the intention of the sentence.
+            if just_cancel is present, justo compares the sentence with the cancel intention.
+        """
+        
+        pos_actions_v = []
+
+        if (not just_cancel) and self.find_v(sentence, action_select_keys_d['personal_info']):
+            pos_actions_v.append('personal_info')
+        elif (not just_cancel) and self.find_v(sentence, action_select_keys_d['help']):
+            pos_actions_v.append('help')
+        elif (not just_cancel) and self.find_v(sentence, action_select_keys_d['record']):
+            pos_actions_v.append('record')
+        elif (not just_cancel) and self.find_v(sentence, action_select_keys_d['stats']):
+            pos_actions_v.append('stats')
+        elif (not just_cancel) and self.find_v(sentence, action_select_keys_d['delete']):
+            pos_actions_v.append('delete')
+        elif self.find_v(sentence, action_select_keys_d['cancel']):
+            pos_actions_v.append('cancel')
+        
+
+        if len(pos_actions_v) > 1 or len(pos_actions_v) == 0:
+            # if we are here, we need desambigurate
+
+            if len(pos_actions_v) == 0:
+                if just_cancel:
+                    pos_actions_v = ['cancel']
+                else:
+                    pos_actions_v = list(action_select_keys_d.keys())
+
+            
+            
+            actions_similarity_v = [0.0 for a in pos_actions_v]
+            actions_synsets_v = []
+            for a in pos_actions_v:
+                actions_synsets_v.append([])
+                for a_w in action_select_keys_d[a]:
+                    ss_v = wn.synsets(a_w)
+                    if len(ss_v) > 0:
+                        actions_synsets_v[-1] += ss_v
+                    
+##            print(pos_actions_v)
+##            for x in actions_synsets_v:
+##                print()
+##                print(x)
+##            input()
+                    
+            tokens_v = nltk.word_tokenize(sentence)
+            for i_a, action in enumerate(pos_actions_v): # for each action
+                for w in tokens_v: # for each word in the sentence
+                    w_ss_v = wn.synsets(w)
+                    
+                    for a_ss in actions_synsets_v[i_a]: # for each ss in the action
+                        for w_ss in w_ss_v: # for each ss in the word
+
+##                        if len(w_ss_v) > 0:
+##                            w_ss = w_ss_v[0]
+                            
+                            d_sim = wn.path_similarity(w_ss, a_ss, simulate_root=False)
+                            if d_sim is not None and d_sim > actions_similarity_v[i_a]:
+                                actions_similarity_v[i_a] = d_sim
+##                                print(w_ss, a_ss, d_sim)
+
+##            print(actions_similarity_v)
+            if max(actions_similarity_v) < 0.6:
+                pos_actions_v = []
+            else:
+                sim_max = max(actions_similarity_v)
+                if just_cancel and sim_max > 0.9:
+                    pos_actions_v = ['cancel']
+                    
+                elif not just_cancel:
+                    i_max = actions_similarity_v.index( sim_max )
+                    pos_actions_v = [ pos_actions_v[i_max] ]
+                else:
+                    pos_actions_v = []
+                
+
+        # At this point we must have 1 option or None
+        assert len(pos_actions_v) <= 1, " - ERROR, intension_detector, mode than 1 posible option"
+        
+        if len(pos_actions_v) == 0:
+            return None
+        else:
+            return pos_actions_v[0]
+        
+        
     
 if __name__ == '__main__':
     sp = Sentence_parser()
-    sp.find_mins('I run two hours around the square and a warm-up of 16 mins in my house.')
+##    sp.find_mins('I run two hours around the square and a warm-up of 16 mins in my house.')
 
+
+    sp = Sentence_parser()
+    q_v = ['I want to add a new record',
+           'I just want to view my results',
+           'I want to clean my data',
+           'back',
+           'delete',
+           'my name is sergio']
+
+    for q in q_v:
+        a = sp.intension_detector(q, False)
+        print(q)
+        print(a)
+        print('')
 
 ##    ss_sport    = wn.synsets('sport')[0]
 ##    ss_exercise = wn.synsets('exercise')[0]

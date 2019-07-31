@@ -278,23 +278,24 @@ class MrExerciseBot():
             self.state.step()
         
         elif i_step == 1:
-            if self.sp.find_v(q, action_select_keys_d['personal_info']):
+            action = self.sp.intension_detector(q)
+            if action == 'personal_info':
                 self.state.set_state(States.ON_PERSONAL_INFO)
                 to_resp_v += self.query(q)
                 
-            elif self.sp.find_v(q, action_select_keys_d['help']):
+            elif action == 'help':
                 self.state.set_state(States.ON_HELP)
                 to_resp_v += self.query(q)
 
-            elif self.sp.find_v(q, action_select_keys_d['record']):
+            elif action == 'record':
                 self.state.set_state(States.ON_REC)
                 to_resp_v += self.query(q)
 
-            elif self.sp.find_v(q, action_select_keys_d['stats']):
+            elif action == 'stats':
                 self.state.set_state(States.ON_STATS)
                 to_resp_v += self.query(q)
 
-            elif self.sp.find_v(q, action_select_keys_d['delete']):
+            elif action == 'delete':
                 self.state.set_state(States.ON_DELETE)
                 to_resp_v += self.query(q)
             else:
@@ -368,7 +369,8 @@ class MrExerciseBot():
 
     def exec_cancel(self, q):
         to_resp_v = []
-        
+
+        self.load_personal_info()
         if self.personal_info_d['complete']:
             to_resp_v += corpus_d['cancel'][0]
             self.state.set_state(States.ON_ACTION_SELECT)
@@ -376,7 +378,6 @@ class MrExerciseBot():
             to_resp_v += corpus_d['cancel_err'][0]
             self.state.set_state(States.ON_PERSONAL_INFO)
           
-        self.load_personal_info()
         to_resp_v += self.query()
 
         return to_resp_v
@@ -394,7 +395,7 @@ class MrExerciseBot():
         to_resp_v = []
 
         # First of all let's find if there is a cancel state
-        if self.sp.find_v(q, action_select_keys_d['cancel']):
+        if self.sp.intension_detector(q, just_cancel=True) =='cancel':
             self.state.set_state(States.ON_CANCEL)
 
 
