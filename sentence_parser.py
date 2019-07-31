@@ -44,12 +44,12 @@ numbers_20_90_d = {'twenty'      :20,
 
 
 
-action_select_keys_d = {'personal_info':  ['personal', 'edit', 'modify'],
+action_select_keys_d = {'personal_info':  ['personal', 'edit', 'modify', 'profile'],
                         'help':           ['help'],
                         'record':         ['record', 'add', 'new'],
-                        'stats':          ['stats', 'summary', 'statistics', 'results'],
+                        'stats':          ['stats', 'summary', 'statistics', 'results', 'status'],
                         'delete':         ['delete', 'erase', 'remove', 'reset', 'clear', 'clean'],
-                        'cancel':         ['cancel', 'stop', 'quit', 'exit', 'back']}
+                        'cancel':         ['cancel', 'stop', 'quit', 'exit', 'back', 'return', 'select']}
 
 
 class Sentence_parser:
@@ -271,7 +271,7 @@ class Sentence_parser:
     
 
 
-    def intension_detector(self, sentence, just_cancel=False):
+    def intension_detector(self, sentence, just_cancel=False, sim_th=0.6):
         """ returns the intention of the sentence.
             if just_cancel is present, justo compares the sentence with the cancel intention.
         """
@@ -292,17 +292,12 @@ class Sentence_parser:
             pos_actions_v.append('cancel')
         
 
-        if len(pos_actions_v) > 1 or len(pos_actions_v) == 0:
+        if (not just_cancel) and (len(pos_actions_v) > 1 or len(pos_actions_v) == 0):
             # if we are here, we need desambigurate
 
             if len(pos_actions_v) == 0:
-                if just_cancel:
-                    pos_actions_v = ['cancel']
-                else:
-                    pos_actions_v = list(action_select_keys_d.keys())
-
-            
-            
+                pos_actions_v = list(action_select_keys_d.keys())
+                
             actions_similarity_v = [0.0 for a in pos_actions_v]
             actions_synsets_v = []
             for a in pos_actions_v:
@@ -335,18 +330,15 @@ class Sentence_parser:
 ##                                print(w_ss, a_ss, d_sim)
 
 ##            print(actions_similarity_v)
-            if max(actions_similarity_v) < 0.6:
-                pos_actions_v = []
+
+
+            sim_max = max(actions_similarity_v)
+            if sim_max > sim_th:
+                i_max = actions_similarity_v.index( sim_max )
+                pos_actions_v = [ pos_actions_v[i_max] ]
             else:
-                sim_max = max(actions_similarity_v)
-                if just_cancel and sim_max > 0.9:
-                    pos_actions_v = ['cancel']
+                pos_actions_v = []
                     
-                elif not just_cancel:
-                    i_max = actions_similarity_v.index( sim_max )
-                    pos_actions_v = [ pos_actions_v[i_max] ]
-                else:
-                    pos_actions_v = []
                 
 
         # At this point we must have 1 option or None
@@ -370,7 +362,8 @@ if __name__ == '__main__':
            'I want to clean my data',
            'back',
            'delete',
-           'my name is sergio']
+           'my name is sergio',
+           'give me the status']
 
     for q in q_v:
         a = sp.intension_detector(q, False)

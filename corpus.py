@@ -70,14 +70,6 @@ MrExerciseBot can understand natural language, even voice messages"""],
 
 
 
-action_select_keys_d = {'personal_info':  ['personal', 'info', 'edit', 'modi'],
-                        'help':           ['help', 'what', '?'],
-                        'record':         ['rec', 'add', 'post'],
-                        'stats':          ['stat'],
-                        'delete':         ['delete', 'erase', 'remove', 'reset'],
-                        'cancel':         ['cancel', 'stop', 'quit', 'exit']}
-
-
 
 
 
