@@ -375,7 +375,8 @@ class MrExerciseBot():
         else:
             to_resp_v += corpus_d['cancel_err'][0]
             self.state.set_state(States.ON_PERSONAL_INFO)
-            
+          
+        self.load_personal_info()
         to_resp_v += self.query()
 
         return to_resp_v
@@ -434,6 +435,13 @@ class MrExerciseBot():
                 
             to_resp_v += self.exec_help(q)
 
+        elif state == States.ON_DELETE:
+            if self.verbose:
+                print(' - MrExerciseBot, query: Selecting ON_DELETE.')
+
+            to_resp_v += self.exec_delete(q)
+
+
         elif state == States.ON_REC:
             if self.verbose:
                 print(' - MrExerciseBot, query: Selecting ON_REC.')
@@ -445,12 +453,6 @@ class MrExerciseBot():
                 print(' - MrExerciseBot, query: Selecting ON_STATS.')
 
             to_resp_v += self.exec_stats(q)
-
-        elif state == States.ON_DELETE:
-            if self.verbose:
-                print(' - MrExerciseBot, query: Selecting ON_DELETE.')
-
-            to_resp_v += self.exec_delete(q)
             
         elif state == States.ON_CANCEL:
             if self.verbose:

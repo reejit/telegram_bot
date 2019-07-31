@@ -8,8 +8,8 @@ re_hour_corpus_v = [r'\bhs?\b', r'\bhours?\b']
 re_mins_corpus_v = [r'\bm\b', r'\bminutes?\b', r'\bmins?\b']
 re_add_corpus_v  = [r'\band\b', r'\bplus\b']
 
-re_yes_corpus_v = [r'\by\b', r'\byes\b', r'\bok\b', r'\bokey\b', r"\bdid\b", r'\bwant\b', r'\bdo\b', r'affirmative', r'positive', r'exact']
-re_not_corpus_v = [r'\bn\b', r'\bnot?\b', r"\bdidt\b", r"\bdidn'?t\b", r"\bdon'?t\b", r'negative']
+re_yes_corpus_v = [r'\by\b', r'\byes\b', r'\bok\b', r'\bokey\b', r"\bdid\b", r'\bwant\b', r'\bdo\b', r'affirmative', r'positive', r'exact', r'correct']
+re_not_corpus_v = [r'\bn\b', r'\bnot?\b', r"\bdidt\b", r"\bdidn'?t\b", r"\bdon'?t\b", r'negative', 'nope']
 
 
 numbers_1_9_d = {'one'         : 1,
