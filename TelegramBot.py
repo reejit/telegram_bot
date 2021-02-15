@@ -15,7 +15,7 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 
 
 class TelegramBot(Updater):
-    def __init__(self, token='YourTelegramBotToken', proxy_url=None, t2s_obj=None, make_log=False, log_folder='./logs', dbs_path='./dbs',verbose=True):
+    def __init__(self, token='1620747384:AAFhcPg6-UN2LIXK67nfUW2gJlOQV-Y9jj0', proxy_url=None, t2s_obj=None, make_log=False, log_folder='./logs', dbs_path='./dbs',verbose=True):
         """ Instancia un servidor para manejar bots a partir usando telegram.
             Cada chat id, tiene su propio bot del timpo BotHandler.
             La componente t2s_obj debe realizar la conversión de voz a texto. """
