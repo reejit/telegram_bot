@@ -2,6 +2,7 @@ wave
 numpy
 pyogg
 librosa
+pandas
 python-telegram-bot
 nltk
 
