@@ -1,0 +1,7 @@
+wave
+numpy
+pyogg
+librosa
+python-telegram-bot
+nltk
+random
